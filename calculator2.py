@@ -29,12 +29,37 @@ class Config(object):
         filename = Args().configfile
         with open(filename) as file:
             l = file.readlines()
-            for i in l:
-                a, b = i.split('=')    
-                config = {a.strip():b.strip()}
-                return config
+            try:
+                for i in l:
+                    a, b = i.split('=')    
+                    config[a.strip()] = float(b)
+            except:
+                print("Error")
+                exit()
+            return config
 
+class UserData(object):
 
+    def __init__(self):
+        self.userdata = self._read_users_data()
+
+    def _read_users_data(self):
+        userdata = []
+        filename = Args().userdata
+        with open(filename) as file:
+            l = file.readlines()
+            try:
+                for i in l:
+                    a, b = i.split(',')
+                    userdata.append((a.strip(), int(b)))
+                return userdata
+            except:
+                print("Error")
+
+def IncomeTaxCalculator(object):
+
+    def calc_for_all_userdata(self):
+        
 
 args = Args()
 print(args.configfile)
@@ -42,3 +67,5 @@ print(args.userdata)
 print(args.output)
 config = Config()
 print(config.config)
+userdata = UserData()
+print(userdata.userdata)
