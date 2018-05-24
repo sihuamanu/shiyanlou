@@ -1,71 +1,34 @@
 #!/usr/bin/env python3
 
 import sys
-import os
-import csv
 
-class Args(object):
-    
-    def __init__(self):
-        self.args = sys.argv[1:]
-        try:                
-            index = self.args.index('-c')
-            self.configfile = self.args[index+1]
-            index = self.args.index('-d')
-            self.userdata = self.args[index+1]
-            index = self.args.index('-o')
-            self.output = self.args[index+1]
-        except:
-            print("Error")
-            exit()
+def cal(a, b):
+    try:
+        income = int(b)
+    except ValueError:
+        print("Parameter Error")
+        exit()
+    insurance = income * (0.08 + 0.02 + 0.005 + 0.06)
+    tax_income = income - insurance - 3500
+    if tax_income <= 0:
+        tax_pay = 0
+    elif tax_income <= 1500:
+        tax_pay = tax_income * 0.03 - 0
+    elif tax_income <= 4500:
+        tax_pay = tax_income * 0.10 - 105
+    elif tax_income <= 9000:
+        tax_pay = tax_income * 0.20 - 555
+    elif tax_income <= 35000:
+        tax_pay = tax_income * 0.25 - 1005
+    elif tax_income <= 55000:
+        tax_pay = tax_income * 0.30 - 2755
+    elif tax_income <= 80000:
+        tax_pay = tax_income * 0.35 - 5505
+    else:
+        tax_pay = tax_income * 0.45 - 13505
+    post_tax_income = income - insurance - tax_pay
+    print( a + ':' +format(post_tax_income, ".2f"))
 
-class Config(object):
-    
-    def __init__(self):
-        self.config = self._read_config()
-
-    def _read_config(self):
-        config = {}
-        filename = Args().configfile
-        with open(filename) as file:
-            l = file.readlines()
-            try:
-                for i in l:
-                    a, b = i.split('=')    
-                    config[a.strip()] = float(b)
-            except:
-                print("Error")
-                exit()
-            return config
-
-class UserData(object):
-
-    def __init__(self):
-        self.userdata = self._read_users_data()
-
-    def _read_users_data(self):
-        userdata = []
-        filename = Args().userdata
-        with open(filename) as file:
-            l = file.readlines()
-            try:
-                for i in l:
-                    a, b = i.split(',')
-                    userdata.append((a.strip(), int(b)))
-                return userdata
-            except:
-                print("Error")
-
-def IncomeTaxCalculator(object):
-
-    def calc_for_all_userdata(self):
-        
-
-args = Args()
-print(args.configfile)
-print(args.userdata)
-print(args.output)
-config = Config()
-print(config.config)
-userdata = UserData()
-print(userdata.userdata)
+for i in sys.argv[1:]:
+    a, b = i.split(':')
+    cal(a, b)
