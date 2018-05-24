@@ -3,7 +3,6 @@
 import sys
 import os
 import csv
-from multiprocessing import Process, Queue
 
 class Args(object):
     
@@ -44,7 +43,7 @@ class UserData(object):
     def __init__(self):
         self.userdata = self._read_users_data()
 
-    def _read_users_data(self, queue1):
+    def _read_users_data(self):
         userdata = []
         filename = Args().userdata
         with open(filename) as file:
@@ -53,17 +52,15 @@ class UserData(object):
                 for i in l:
                     a, b = i.split(',')
                     userdata.append((a.strip(), int(b)))
-               # return userdata
-                queue1.put(userdata)
+                return userdata
             except:
                 print("Error")
                 exit()
 
 class IncomeTaxCalculator(object):
 
-    def calc_for_all_userdata(self, queue2):
-       # user = UserData().userdata
-        user = queue1.get()
+    def calc_for_all_userdata(self):
+        user = UserData().userdata
         config = Config().config
         coefficient = (config['YangLao'] + config['YiLiao'] + config['ShiYe'] + config['GongShang'] + config['ShengYu'] + config['GongJiJin'])
         basenum = 3500
@@ -94,25 +91,17 @@ class IncomeTaxCalculator(object):
                 tax_pay = tax_income * 0.45 - 13505
             post_tax_income = i[1] - insurance - tax_pay
             resultList.append((i[0],i[1],format(insurance, ".2f"),format(tax_pay, ".2f"),format(post_tax_income, ".2f")))
-       # return resultList 
-        queue2.put(resultList)
+        return resultList 
 
-    def export(self, queue2, default='csv'):
+    def export(self, default='csv'):
 
-        #result = self.calc_for_all_userdata()
-        result = queue2.get()
+        result = self.calc_for_all_userdata()
         with open(Args().output, 'w') as file:
             writer = csv.writer(file)
             writer.writerows(result)
 
 if __name__ == '__main__':   
-    
-    queue1 = Queue()
-    queue2 = Queue()
 
     calpay = IncomeTaxCalculator()
-    #calpay.calc_for_all_userdata()
-    #calpay.export()
-    Process(target=calpay.calc_for_all_userdata, args=(queue1,)).start()
-    Process(target=calpay.calc_for_all_userdata, args=(queue2,)).start()
-    Process(target=calpay.export, args=(queue2,)).start()
+    calpay.calc_for_all_userdata()
+    calpay.export()
