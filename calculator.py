@@ -55,6 +55,7 @@ class UserData(object):
                 return userdata
             except:
                 print("Error")
+                exit()
 
 class IncomeTaxCalculator(object):
 
@@ -93,6 +94,7 @@ class IncomeTaxCalculator(object):
         return resultList 
 
     def export(self, default='csv'):
+
         result = self.calc_for_all_userdata()
         with open(Args().output, 'w') as file:
             writer = csv.writer(file)
