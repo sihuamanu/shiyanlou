@@ -17,7 +17,7 @@ INCOME_QUICK_LOOKUP_ITEMS = [
     Tax_Quick_Lookup_Items(80000, 0.45, 13505),
     Tax_Quick_Lookup_Items(55000, 0.35, 5505),
     Tax_Quick_Lookup_Items(35000, 0.30, 2755),
-    Tax_Quick_Lookup_Items(9000, 0.25, 1055),
+    Tax_Quick_Lookup_Items(9000, 0.25, 1005),
     Tax_Quick_Lookup_Items(4500, 0.20, 555),
     Tax_Quick_Lookup_Items(1500, 0.10, 105),
     Tax_Quick_Lookup_Items(0, 0.03, 0),
@@ -137,7 +137,7 @@ class IncomeTaxCalculator(Process):
             return '0.00', '{:.2f}'.format(real_income)
         for item in INCOME_QUICK_LOOKUP_ITEMS:
             if tax_part > item.start_point:
-                tax = tax_part * item.tax_rate - item.quick_substractor
+                tax = tax_part * item.tax_rate - item.quick_subtractor
                 return '{:.2f}'.format(tax), '{:.2f}'.format(real_income - tax)
 
     def calc_for_all_userdata(self):
@@ -151,6 +151,10 @@ class IncomeTaxCalculator(Process):
             tax, remain = self.calc_income_tax_and_remain(income)
             data += [social_insurance_money, tax, remain]
             yield data
+
+    def run(self):
+        for data in self.calc_for_all_userdata():
+            q_result.put(data)
 
 
 class Exporter(Process):
@@ -174,5 +178,3 @@ if __name__ == '__main__':
     ]
     for worker in workers:
         worker.run()
-            
-        
