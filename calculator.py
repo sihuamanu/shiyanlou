@@ -3,8 +3,11 @@
 import sys
 import csv
 import queue
+import configparser
+from getopt import getopt, GetoptError
 from multiprocessing import Process, Queue
 from collections import namedtuple
+from datetime import datetime
 
 TAX_START_POINT = 3500
 
@@ -28,15 +31,30 @@ q_result = Queue()
 
 class Args(object):
     def __init__(self):
-        self.args = sys.argv[1:]
+        self.options = self._options()
+
+    def _options(self):
+        try:
+            opts, _ = getopt(sys.argv[1:], 'hC:c:d:o:', ['help'])            
+        except GetoptError:
+            print('Parameter Error')
+            exit()
+        options = dict(opts)
+        if len(options) ==1 and ('-h' in options or '--help' in options):
+            print('Usage: calculator.py -C cityname -c config -d userdata -o resultdate')
+            exit()
+        return options
 
     def _value_after_option(self, option):
-        try:
-            index = self.args.index(option)
-            return self.args[index + 1]
-        except (ValueError, IndexError):
-            print("Parameter1 Error")
+        value = self.options.get (option)
+        if value is None and option != '-C':
+            print('Parameter Error')
             exit()
+        return value
+
+    @property
+    def city(self):
+        return self._value_after_option('-C')
 
     @property
     def config_path(self):
@@ -58,22 +76,17 @@ class Config(object):
         self.config = self._read_config() 
 
     def _read_config(self):
-        config_path = args.config_path
-        config = {}
-        with open(config_path) as file:
-            for line in file.readlines():
-                key, value = line.strip().split(' = ')
-                try:
-                    config[key] = float(value)
-                except ValueError:
-                    print("Parameter2 Error")
-                    exit()
-        return config
+        config = configparser.ConfigParser()
+        config.read(args.config_path)
+        if args.city and args.city.upper() in config.sections():
+            return config[args.city.upper()]
+        else:
+            return config['DEFAULT']
 
-    def _get_config(self, key):
+    def _get_config(self, name):
         try:
-            return self.config[key]
-        except KeyError:
+            return float(self.config[name])
+        except (ValueError, KeyError):
             print("KeyError")
             exit()
 
@@ -149,7 +162,9 @@ class IncomeTaxCalculator(Process):
             data = [employee_id, income]
             social_insurance_money = '{:.2f}'.format(self.calc_social_insurance_money(income))
             tax, remain = self.calc_income_tax_and_remain(income)
-            data += [social_insurance_money, tax, remain]
+            t = datetime.now()
+            super_t = datetime.strftime(t, '%Y-%m-%d %H:%M:%S')
+            data += [social_insurance_money, tax, remain, super_t]
             yield data
 
     def run(self):
